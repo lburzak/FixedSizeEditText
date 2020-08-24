@@ -1,0 +1,2 @@
+include ':fixedsizeedittext'
+rootProject.name = "FixedSizeEditText"
