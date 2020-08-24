@@ -5,5 +5,7 @@ import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 
 class FixedSizeEditText(context: Context, attrs: AttributeSet) : AppCompatEditText(context, attrs) {
-
+    init {
+        background = null
+    }
 }
