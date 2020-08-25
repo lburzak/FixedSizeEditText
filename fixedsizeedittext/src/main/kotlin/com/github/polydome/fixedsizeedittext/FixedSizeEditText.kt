@@ -30,8 +30,8 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     private val prefs: Preferences = HARDCODED.preferences
+    private val props: Preferences = prefs.copy()
     private val characters = CharArray(prefs.length)
-    private val boxBackground = prefs.boxBackground
     private val boxRect = Rect(0, 0, 0, 0)
 
     init {
@@ -47,23 +47,23 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     private fun drawBoxes(canvas: Canvas) {
-        boxBackground?.let {
+        props.boxBackground?.let {
             boxRect.left = 0
             boxRect.right = (boxRect.left + prefs.boxWidth + 0.5).roundToInt()
 
             boxRect.top = 30
             boxRect.bottom = (boxRect.top + prefs.boxHeight + 0.5).roundToInt()
 
-            boxBackground.bounds = boxRect
-            boxBackground.draw(canvas)
+            props.boxBackground.bounds = boxRect
+            props.boxBackground.draw(canvas)
             drawCharacter(canvas, boxRect, 0)
 
             for (i in characters.indices.drop(1)) {
                 boxRect.left = (boxRect.right + prefs.spacing + 0.5).roundToInt()
                 boxRect.right = (boxRect.left + prefs.boxWidth + 0.5).roundToInt()
 
-                boxBackground.bounds = boxRect
-                boxBackground.draw(canvas)
+                props.boxBackground.bounds = boxRect
+                props.boxBackground.draw(canvas)
                 drawCharacter(canvas, boxRect, i)
             }
         }
@@ -75,8 +75,8 @@ class FixedSizeEditText : AppCompatEditText {
 
     override fun onTextChanged(text: CharSequence?, start: Int, lengthBefore: Int, lengthAfter: Int) {
         if (isReady() && text != null) {
-            text.take(prefs.length)
-                .padEnd(prefs.length, '\u0000')
+            text.take(props.length)
+                .padEnd(props.length, '\u0000')
                 .forEachIndexed { index, char ->
                     characters[index] = char
                 }
@@ -94,5 +94,5 @@ class FixedSizeEditText : AppCompatEditText {
      * are initialized
      */
     @Suppress("SENSELESS_COMPARISON")
-    private fun isReady(): Boolean = prefs != null
+    private fun isReady(): Boolean = props != null
 }
