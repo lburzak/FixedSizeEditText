@@ -30,7 +30,7 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     private val prefs: Preferences = HARDCODED.preferences
-    private val props: Preferences = prefs.copy()
+    private val props: Properties = Properties.fromPreferences(prefs)
     private val characters = CharArray(prefs.length)
     private val boxRect = Rect(0, 0, 0, 0)
 
@@ -39,7 +39,36 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(1000, 1000)
+        val widthMeasureMode = MeasureSpec.getMode(widthMeasureSpec)
+        val heightMeasureMode = MeasureSpec.getMode(heightMeasureSpec)
+
+        val spacingWidthSum = (prefs.length - 1) * prefs.spacing
+        val boxesWidthSum = prefs.boxWidth * prefs.length
+
+        println("${MeasureSpec.toString(widthMeasureSpec)}, $spacingWidthSum, $boxesWidthSum")
+        println("${MeasureSpec.toString(heightMeasureSpec)}, ${prefs.boxHeight}")
+
+        val width = when (widthMeasureMode) {
+            MeasureSpec.EXACTLY ->
+                MeasureSpec.getSize(widthMeasureSpec)
+            MeasureSpec.AT_MOST ->
+                (spacingWidthSum + boxesWidthSum).coerceAtMost(MeasureSpec.getSize(widthMeasureSpec))
+            MeasureSpec.UNSPECIFIED ->
+                spacingWidthSum + boxesWidthSum
+            else -> 0
+        }
+
+        val height = when (heightMeasureMode) {
+            MeasureSpec.EXACTLY ->
+                MeasureSpec.getSize(heightMeasureSpec)
+            MeasureSpec.AT_MOST ->
+                prefs.boxHeight.coerceAtMost(MeasureSpec.getSize(widthMeasureSpec))
+            MeasureSpec.UNSPECIFIED ->
+                prefs.boxHeight
+            else -> 0
+        }
+
+        setMeasuredDimension(width, height)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -47,23 +76,23 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     private fun drawBoxes(canvas: Canvas) {
-        props.boxBackground?.let {
+        prefs.boxBackground?.let {
             boxRect.left = 0
-            boxRect.right = (boxRect.left + prefs.boxWidth + 0.5).roundToInt()
+            boxRect.right = (boxRect.left + prefs.boxWidth)
 
-            boxRect.top = 30
-            boxRect.bottom = (boxRect.top + prefs.boxHeight + 0.5).roundToInt()
+            boxRect.top = 0
+            boxRect.bottom = (boxRect.top + prefs.boxHeight)
 
-            props.boxBackground.bounds = boxRect
-            props.boxBackground.draw(canvas)
+            prefs.boxBackground.bounds = boxRect
+            prefs.boxBackground.draw(canvas)
             drawCharacter(canvas, boxRect, 0)
 
             for (i in characters.indices.drop(1)) {
-                boxRect.left = (boxRect.right + prefs.spacing + 0.5).roundToInt()
-                boxRect.right = (boxRect.left + prefs.boxWidth + 0.5).roundToInt()
+                boxRect.left = (boxRect.right + prefs.spacing)
+                boxRect.right = (boxRect.left + prefs.boxWidth)
 
-                props.boxBackground.bounds = boxRect
-                props.boxBackground.draw(canvas)
+                prefs.boxBackground.bounds = boxRect
+                prefs.boxBackground.draw(canvas)
                 drawCharacter(canvas, boxRect, i)
             }
         }
@@ -75,8 +104,8 @@ class FixedSizeEditText : AppCompatEditText {
 
     override fun onTextChanged(text: CharSequence?, start: Int, lengthBefore: Int, lengthAfter: Int) {
         if (isReady() && text != null) {
-            text.take(props.length)
-                .padEnd(props.length, '\u0000')
+            text.take(prefs.length)
+                .padEnd(prefs.length, '\u0000')
                 .forEachIndexed { index, char ->
                     characters[index] = char
                 }
