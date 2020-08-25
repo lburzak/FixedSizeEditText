@@ -44,7 +44,6 @@ class FixedSizeEditText : AppCompatEditText {
 
     override fun onDraw(canvas: Canvas?) {
         canvas?.let { drawBoxes(it) }
-        super.onDraw(canvas)
     }
 
     private fun drawBoxes(canvas: Canvas) {
