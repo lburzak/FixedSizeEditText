@@ -1,10 +1,14 @@
 package com.github.polydome.fixedsizeedittext
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.updateBounds
 import kotlin.math.roundToInt
 
 class FixedSizeEditText : AppCompatEditText {
@@ -32,7 +36,6 @@ class FixedSizeEditText : AppCompatEditText {
     private val prefs: Preferences = HARDCODED.preferences
     private val props: Properties = Properties.fromPreferences(prefs)
     private val characters = CharArray(prefs.length)
-    private val boxRect = Rect(0, 0, 0, 0)
 
     init {
         background = null
@@ -44,9 +47,6 @@ class FixedSizeEditText : AppCompatEditText {
 
         val spacingWidthSum = (prefs.length - 1) * prefs.spacing
         val boxesWidthSum = prefs.boxWidth * prefs.length
-
-        println("${MeasureSpec.toString(widthMeasureSpec)}, $spacingWidthSum, $boxesWidthSum")
-        println("${MeasureSpec.toString(heightMeasureSpec)}, ${prefs.boxHeight}")
 
         val width = when (widthMeasureMode) {
             MeasureSpec.EXACTLY ->
@@ -62,7 +62,7 @@ class FixedSizeEditText : AppCompatEditText {
             MeasureSpec.EXACTLY ->
                 MeasureSpec.getSize(heightMeasureSpec)
             MeasureSpec.AT_MOST ->
-                prefs.boxHeight.coerceAtMost(MeasureSpec.getSize(widthMeasureSpec))
+                prefs.boxHeight.coerceAtMost(MeasureSpec.getSize(heightMeasureSpec))
             MeasureSpec.UNSPECIFIED ->
                 prefs.boxHeight
             else -> 0
@@ -71,29 +71,47 @@ class FixedSizeEditText : AppCompatEditText {
         setMeasuredDimension(width, height)
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        props.adjustBoxSize(w, h)
+    }
+
+    private fun Properties.adjustBoxSize(maxWidth: Int, maxHeight: Int) {
+        val spacingSum = (prefs.length - 1) * prefs.spacing
+        val boxesWidthSum = this.boxWidth * prefs.length
+        val preferredWidth = spacingSum + boxesWidthSum
+
+        if (preferredWidth > maxWidth) {
+            this.spacing = ((this.spacing.toFloat() / preferredWidth * maxWidth)).roundToInt()
+            this.boxWidth = ((this.boxWidth.toFloat() / preferredWidth * maxWidth)).roundToInt()
+        }
+
+        this.boxHeight = this.boxHeight.coerceAtMost(maxHeight)
+    }
+
     override fun onDraw(canvas: Canvas?) {
         canvas?.let { drawBoxes(it) }
     }
 
     private fun drawBoxes(canvas: Canvas) {
         prefs.boxBackground?.let {
-            boxRect.left = 0
-            boxRect.right = (boxRect.left + prefs.boxWidth)
+            it.updateBounds(
+                left = 0,
+                top = canvas.clipBounds.top,
+                right = props.boxWidth,
+                bottom = canvas.clipBounds.top + props.boxHeight
+            )
 
-            boxRect.top = 0
-            boxRect.bottom = (boxRect.top + prefs.boxHeight)
-
-            prefs.boxBackground.bounds = boxRect
-            prefs.boxBackground.draw(canvas)
-            drawCharacter(canvas, boxRect, 0)
+            it.draw(canvas)
+            drawCharacter(canvas, it.bounds, 0)
 
             for (i in characters.indices.drop(1)) {
-                boxRect.left = (boxRect.right + prefs.spacing)
-                boxRect.right = (boxRect.left + prefs.boxWidth)
+                it.updateBounds(
+                    left = it.bounds.right + props.spacing,
+                    right = it.bounds.right + props.spacing + props.boxWidth
+                )
 
-                prefs.boxBackground.bounds = boxRect
-                prefs.boxBackground.draw(canvas)
-                drawCharacter(canvas, boxRect, i)
+                it.draw(canvas)
+                drawCharacter(canvas, it.bounds, i)
             }
         }
     }
