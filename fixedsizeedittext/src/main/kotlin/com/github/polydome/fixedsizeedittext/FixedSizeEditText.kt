@@ -13,9 +13,27 @@ import androidx.core.graphics.drawable.updateBounds
 import kotlin.math.roundToInt
 
 class FixedSizeEditText : AppCompatEditText {
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int): super(context, attrs, defStyleAttr)
-    constructor(context: Context, attrs: AttributeSet): super(context, attrs)
-    constructor(context: Context): super(context)
+    private val prefs: Preferences
+    private val props: Properties
+    private val characters: CharArray
+
+    private val textRect = Rect()
+
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int): super(context, attrs, defStyleAttr) {
+        prefs = Preferences.fromAttributes(context, attrs)
+        props = Properties.fromPreferences(prefs)
+        characters = CharArray(prefs.length)
+    }
+    constructor(context: Context, attrs: AttributeSet): super(context, attrs) {
+        prefs = Preferences.fromAttributes(context, attrs)
+        props = Properties.fromPreferences(prefs)
+        characters = CharArray(prefs.length)
+    }
+    constructor(context: Context): super(context) {
+        prefs = Preferences.default(context)
+        props = Properties.fromPreferences(prefs)
+        characters = CharArray(prefs.length)
+    }
 
     private val HARDCODED = object {
         val textPaint = Paint().apply {
@@ -23,23 +41,7 @@ class FixedSizeEditText : AppCompatEditText {
             textSize = 30F
             textAlign = Paint.Align.CENTER
         }
-
-        val preferences = Preferences(
-            length = 4,
-            spacing = 60,
-            boxWidth = 100,
-            boxHeight = 200,
-            boxBackground = ResourcesCompat
-                .getDrawable(resources, R.drawable.background_box, context.theme),
-            boxGravity = Gravity.CENTER
-        )
     }
-
-    private val prefs: Preferences = HARDCODED.preferences
-    private val props: Properties = Properties.fromPreferences(prefs)
-    private val characters = CharArray(prefs.length)
-
-    private val textRect = Rect()
 
     init {
         background = null

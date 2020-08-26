@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FixedSizeEditText">
+        <attr name="boxBackground" format="reference"/>
+        <attr name="boxHeight" format="dimension"/>
+        <attr name="boxWidth" format="dimension"/>
+        <attr name="boxGravity" format="enum">
+            <enum name="center" value="17"/>
+        </attr>
+        <attr name="spacing" format="dimension"/>
+        <attr name="inputLength" format="integer"/>
+    </declare-styleable>
+</resources>
