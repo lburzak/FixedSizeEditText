@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.view.Gravity
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.updateBounds
@@ -36,6 +37,8 @@ class FixedSizeEditText : AppCompatEditText {
     private val prefs: Preferences = HARDCODED.preferences
     private val props: Properties = Properties.fromPreferences(prefs)
     private val characters = CharArray(prefs.length)
+
+    private val textRect = Rect()
 
     init {
         background = null
@@ -117,7 +120,8 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     private fun drawCharacter(canvas: Canvas, boxRect: Rect, charIndex: Int) {
-        canvas.drawText(characters, charIndex, 1, boxRect.exactCenterX(), boxRect.exactCenterY(), HARDCODED.textPaint)
+        Gravity.apply(Gravity.CENTER, HARDCODED.textPaint.measureText(characters, charIndex, 1).toInt(), HARDCODED.textPaint.fontMetrics.bottom.toInt(), boxRect, textRect)
+        canvas.drawText(characters, charIndex, 1, textRect.exactCenterX(), textRect.exactCenterY(), HARDCODED.textPaint)
     }
 
     override fun onTextChanged(text: CharSequence?, start: Int, lengthBefore: Int, lengthAfter: Int) {
