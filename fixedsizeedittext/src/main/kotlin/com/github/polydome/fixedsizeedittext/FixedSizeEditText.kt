@@ -128,6 +128,8 @@ class FixedSizeEditText : AppCompatEditText {
             HARDCODED.textPaint.measureText(characters, charIndex, 1).toInt(),
             HARDCODED.textPaint.fontMetricsInt.height(),
             boxRect,
+            0,
+            HARDCODED.textPaint.fontMetricsInt.descent,
             textRect
         )
 
