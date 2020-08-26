@@ -30,7 +30,8 @@ class FixedSizeEditText : AppCompatEditText {
             boxWidth = 100,
             boxHeight = 200,
             boxBackground = ResourcesCompat
-                .getDrawable(resources, R.drawable.background_box, context.theme)
+                .getDrawable(resources, R.drawable.background_box, context.theme),
+            boxGravity = Gravity.CENTER
         )
     }
 
@@ -120,8 +121,22 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     private fun drawCharacter(canvas: Canvas, boxRect: Rect, charIndex: Int) {
-        Gravity.apply(Gravity.CENTER, HARDCODED.textPaint.measureText(characters, charIndex, 1).toInt(), HARDCODED.textPaint.fontMetrics.bottom.toInt(), boxRect, textRect)
-        canvas.drawText(characters, charIndex, 1, textRect.exactCenterX(), textRect.exactCenterY(), HARDCODED.textPaint)
+        Gravity.apply(
+            prefs.boxGravity,
+            HARDCODED.textPaint.measureText(characters, charIndex, 1).toInt(),
+            HARDCODED.textPaint.fontMetricsInt.height(),
+            boxRect,
+            textRect
+        )
+
+        canvas.drawText(
+            characters,
+            charIndex,
+            1,
+            textRect.exactCenterX(),
+            textRect.exactCenterY(),
+            HARDCODED.textPaint
+        )
     }
 
     override fun onTextChanged(text: CharSequence?, start: Int, lengthBefore: Int, lengthAfter: Int) {
@@ -146,4 +161,6 @@ class FixedSizeEditText : AppCompatEditText {
      */
     @Suppress("SENSELESS_COMPARISON")
     private fun isReady(): Boolean = props != null
+
+    private fun Paint.FontMetricsInt.height(): Int = bottom - top
 }
