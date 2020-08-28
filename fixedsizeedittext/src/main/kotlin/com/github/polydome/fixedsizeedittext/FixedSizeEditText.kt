@@ -5,14 +5,14 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.text.Editable
 import android.util.AttributeSet
 import android.view.Gravity
-import androidx.appcompat.widget.AppCompatEditText
-import androidx.core.content.res.ResourcesCompat
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.graphics.drawable.updateBounds
 import kotlin.math.roundToInt
 
-class FixedSizeEditText : AppCompatEditText {
+class FixedSizeEditText : AppCompatTextView {
     private val prefs: Preferences
     private val props: Properties
     private val characters: CharArray
@@ -44,8 +44,19 @@ class FixedSizeEditText : AppCompatEditText {
     }
 
     init {
+        setTextIsSelectable(true)
+        isFocusable = true
+        text = Editable.Factory().newEditable("")
+        val selectable = true
+        isFocusableInTouchMode = selectable
+        isFocusable = true
+        isClickable = selectable
+        isLongClickable = selectable
         background = null
     }
+
+    override fun getDefaultEditable(): Boolean = true
+    override fun onCheckIsTextEditor(): Boolean = true
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMeasureMode = MeasureSpec.getMode(widthMeasureSpec)
